@@ -1,0 +1,167 @@
+// Assigment 7: Data Structures
+// Name: Samantha Gonzalez
+// Date: 04/10/2025
+#include <iostream>
+#include <stack>
+using namespace std;
+
+//Node structure
+struct Node {
+    int key;
+    Node* left;
+    Node* right;
+};
+
+//Create new node
+Node* createNode(const int x) {
+    const auto node = new Node;
+    node->key = x;
+    node->left = node->right = nullptr;
+    return node;
+}
+
+//Insert
+Node* InsertBST(const int x, Node* root) {
+    Node* newNode = createNode(x);
+
+    if (root == nullptr) return newNode;
+
+    Node* parent = nullptr;
+    Node* current = root;
+
+    while (current != nullptr) {
+        parent = current;
+        if (x < current->key)
+            current = current->left;
+        else if (x > current->key)
+            current = current->right;
+        else {
+
+            delete newNode;
+            return root;
+        }
+    }
+
+    if (x < parent->key)
+        parent->left = newNode;
+    else
+        parent->right = newNode;
+
+    return root;
+}
+
+//Delete with null check
+Node* DeleteBST(const int x, Node* root) {
+    Node* parent = nullptr;
+    Node* current = root;
+
+    //Locate the node to delete
+    while (current && current->key != x) {
+        parent = current;
+        if (x < current->key)
+            current = current->left;
+        else
+            current = current->right;
+    }
+
+    if (!current) return root;
+
+    //Handle two children
+    if (current->left && current->right) {
+
+        Node* successorParent = current;
+        Node* successor = current->right;
+
+        while (successor->left) {
+            successorParent = successor;
+            successor = successor->left;
+        }
+
+        current->key = successor->key;
+
+        //Delete the successor node
+        parent = successorParent;
+        current = successor;
+    }
+
+    //Node has 0 or 1 child
+    Node* child = (current->left) ? current->left : current->right;
+
+    if (parent == nullptr) {
+        delete current;
+        return child;
+    }
+
+    //Pointer Function
+    if (parent->left == current)
+        parent->left = child;
+    else
+        parent->right = child;
+
+    delete current;
+    return root;
+}
+
+//Inorder Traversal
+void inorder(Node* root) {
+    stack<Node*> s;
+    Node* current = root;
+
+    while (current != nullptr || !s.empty()) {
+        while (current != nullptr) {
+            s.push(current);
+            current = current->left;
+        }
+        current = s.top();
+        s.pop();
+        cout << current->key << " ";
+        current = current->right;
+    }
+}
+
+//Postorder Free
+void FreeTree(Node* root) {
+    if (!root) return;
+
+    stack<Node*> s1, s2;
+    s1.push(root);
+
+    while (!s1.empty()) {
+        Node* node = s1.top(); s1.pop();
+        s2.push(node);
+
+        if (node->left) s1.push(node->left);
+        if (node->right) s1.push(node->right);
+    }
+
+    while (!s2.empty()) {
+        delete s2.top(); s2.pop();
+    }
+}
+
+//Main function output
+int main() {
+    Node* root = nullptr;
+
+    root = InsertBST(50, root);
+    root = InsertBST(60, root);
+    root = InsertBST(15, root);
+    root = InsertBST(20, root);
+    root = InsertBST(10, root);
+    root = InsertBST(30, root);
+    root = InsertBST(05, root);
+
+    cout << "Inorder traversal before deletion: ";
+    inorder(root);
+    cout << endl;
+
+    root = DeleteBST(60, root);
+
+    cout << "Inorder traversal after deleting 60: ";
+    inorder(root);
+    cout << endl;
+
+    FreeTree(root);
+
+    return 0;
+}
